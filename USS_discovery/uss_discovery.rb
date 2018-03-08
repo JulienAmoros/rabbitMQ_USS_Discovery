@@ -62,11 +62,6 @@ class Event
       type_label = type_labels[random]
 
       $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time)
-      $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time) ############
-      $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time) ############
-      $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time) ############
-      $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time) ############
-      $scheduler << Event.new('warning.defect.' + type_label, "#{type_name} is disfunctionnal, sending repair drones.", time) ############
       $scheduler << Event.new('recovery.defect.' + type_label, "#{type_name} anomaly repaired.", time + Random.new.rand(2..5))
     end
 
