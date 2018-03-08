@@ -13,7 +13,7 @@ Login/password: guest/guest
 Once installed, don't forget to modify client's host field ('hostname:' while instanciating bunny client)
 with the IP of your RabbitMQ instance.
 
-##Running the project
+## Running the project
 In folder USS_discovery, uss_discovery.rb is the event generator, external_USS_logging.rb is the general
 logging system (just using queue), uss_recovery_stats.rb use the direct exchange (with temporary queue)
 and uss_shield_status_logging.rb uses topic type exchange with temporary queue.
