@@ -1,5 +1,6 @@
 require 'date'
 require 'bunny'
+require 'json'
 
 $scheduler = []
 $f_shield_state = 100
@@ -21,9 +22,8 @@ class Event
 
   def happens
     # Print event
-    color = get_color
-    puts "[#{time}] #{color}#{type.split('.')[0].upcase}\e[0m - #{message}"
-    log = "[#{time}] #{type.split('.')[0].upcase} - #{message}"
+    puts "[#{time}] #{get_color}#{get_severity.upcase}\e[0m - #{message}"
+    log = JSON.generate({ subject: message, severity: get_severity.upcase, timestamp: time.to_i })
 
     ### Part for rabbitMQ ###
     # Send permanent logging
