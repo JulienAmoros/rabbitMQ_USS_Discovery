@@ -6,7 +6,7 @@ connection = Bunny.new(hostname:  '172.17.0.2')
 connection.start
 
 channel = connection.create_channel
-queue = channel.queue('all_logs', durable: true, exclusive: true)
+queue = channel.queue('all_logs', durable: true)
 
 log_file = open('USS_logs.log', 'a')
 

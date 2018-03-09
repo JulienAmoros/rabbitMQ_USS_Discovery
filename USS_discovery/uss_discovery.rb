@@ -28,8 +28,10 @@ class Event
                               timestamp: time.to_i)
 
     ### Part for rabbitMQ ###
-    # Send permanent logging
-    $channel.default_exchange.publish(log, routing_key: 'all_logs')
+    # Creating permanent and exclusive queue for logs
+    $channel.queue('all_logs', durable: true)
+    # Send permanent logging - default exchange is durable by default
+    $channel.default_exchange.publish(log, routing_key: 'all_logs', persistent: true)
 
     # Send logs per severity to severity direct exchange
     $uss_broadcast_severity.publish(log, routing_key: get_severity)
