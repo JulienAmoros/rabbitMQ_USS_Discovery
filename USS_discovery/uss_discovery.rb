@@ -12,7 +12,7 @@ $uss_broadcast_severity = $channel.direct('all_severity')
 $uss_broadcast_topic = $channel.topic('all_types')
 
 class Event
-  attr_reader :time, :message, :type
+  attr_reader :time
 
   def initialize(type, message, time)
     @type = type
@@ -22,10 +22,10 @@ class Event
 
   def happens
     # Print event
-    puts "[#{time}] #{get_color}#{get_severity.upcase}\e[0m - #{message}"
-    log = Utils.generate_json(subject: message,
+    puts "[#{@time}] #{get_color}#{get_severity.upcase}\e[0m - #{@message}"
+    log = Utils.generate_json(subject: @message,
                               severity: get_severity.upcase,
-                              timestamp: time.to_i)
+                              timestamp: @time.to_i)
 
     ### Part for rabbitMQ ###
     # Send permanent logging
@@ -35,14 +35,14 @@ class Event
     $uss_broadcast_severity.publish(log, routing_key: get_severity)
 
     # Send logs per types to topic exchange
-    $uss_broadcast_topic.publish(log, routing_key: type)
+    $uss_broadcast_topic.publish(log, routing_key: @type)
 
     # Generate event
     generate_event
   end
 
   def generate_event
-    if type == 'info.access' or type == 'starting'
+    if @type == 'info.access' or @type == 'starting'
       time = Time.new + Random.new.rand(1..5)
       characters = ['Captain Lorca', 'First Officer Burnham', 'Science Officer Saru', 'Chief Engineer Stamets', 'Cadet Tilly', 'Ambassador Sarek', 'Admiral Cornwell']
       rooms = ['Bridge', 'Personnal Quarter', 'Nursery', 'Laboratory', 'Technical Office', 'Dinner Room', 'Gym Room']
@@ -53,7 +53,7 @@ class Event
       $scheduler << Event.new('info.access', "#{character} has accessed #{room}", time)
     end
 
-    if type.include? 'warning.defect' or type == 'starting'
+    if @type.include? 'warning.defect' or @type == 'starting'
       time = Time.new + Random.new.rand(6..15)
 
       type_names = ['Spore Drive System', 'Laser System', 'Deflector Shield System', 'Energy Storage system']
@@ -67,7 +67,7 @@ class Event
       $scheduler << Event.new('recovery.defect.' + type_label, "#{type_name} anomaly repaired.", time + Random.new.rand(2..5))
     end
 
-    if type == 'danger.enemy' or type == 'starting'
+    if @type == 'danger.enemy' or @type == 'starting'
       time = Time.new + Random.new.rand(7..15)
       enemy_ships = ['Klingon', 'Romulan', 'Pirate']
       enemy_ship = enemy_ships[rand(enemy_ships.length)]
@@ -89,15 +89,15 @@ class Event
           $f_shield_state += 20
           $scheduler << Event.new('info.repair.shield', "Front shield at #{$f_shield_state}%", time + i + 6)
         end
-      $scheduler << Event.new('recovery.damage.shield', "Shields recovering over", time+ steps + 6)
+      $scheduler << Event.new('recovery.damage.shield', "Shields recovering over", time + steps + 6)
       end
     end
 
-    if type == 'black.jump.start' or type == 'starting'
+    if @type == 'black.jump.start' or @type == 'starting'
       time = Time.new + Random.new.rand(30..32)
 
       $scheduler << Event.new('black.jump.start', 'Preparing Hyper Jump', time)
-      $scheduler << Event.new('black.jump.over', 'Jumping over', Time.new + 1) unless type == 'starting'
+      $scheduler << Event.new('black.jump.over', 'Jumping over', Time.new + 1) unless @type == 'starting'
     end
   end
 
@@ -117,7 +117,7 @@ class Event
   end
 
   def get_severity
-    type.split('.')[0]
+    @type.split('.')[0]
   end
 end
 
