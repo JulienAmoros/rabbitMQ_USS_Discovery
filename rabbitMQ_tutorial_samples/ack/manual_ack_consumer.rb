@@ -13,10 +13,8 @@ begin
   queue.subscribe(block: true, manual_ack: true) do |_delivery_info, _properties, body|
     puts " [x] Processing #{body} (#{_delivery_info.delivery_tag})"
     sleep body.count('.')
-    puts " [x] Processing over (#{_delivery_info.delivery_tag})"
-    # channel.nack(_delivery_info.delivery_tag, requeue: true)
     channel.ack(_delivery_info.delivery_tag)
-    puts 'Job acknowledged'
+    puts " [x] Processing over (#{_delivery_info.delivery_tag})"
   end
 rescue Interrupt => _
   connection.close
