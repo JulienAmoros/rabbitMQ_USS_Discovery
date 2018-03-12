@@ -14,17 +14,21 @@ $uss_broadcast_topic = $channel.topic('all_types')
 class Scheduler
   def initialize
     @scheduler = []
+    @mutex = Mutex.new
   end
 
   def add(event)
-    # mutex = Mutex.new
-    @scheduler << event
-    @scheduler.sort! { |e1, e2| e1.time <=> e2.time}
+    @mutex.synchronize do
+      @scheduler << event
+      @scheduler.sort! { |e1, e2| e1.time <=> e2.time}
+    end
   end
 
   # return first event only if it happened
   def get_event
-    @scheduler.shift if @scheduler.first.time < Time.now
+    @mutex.synchronize do
+      @scheduler.shift if @scheduler.first.time < Time.now
+    end
   end
 
   def empty?
@@ -160,15 +164,14 @@ class Event
 
     # Subscribe to the queue
     @rpc_queue.subscribe(block: false) do |_delivery_info, properties, payload|
-      # puts payload + ' time: ' + Time.new.to_s
       # Add processing events to the scheduler
-        $scheduler.add(Event.new('info.send.start', "Info Request #{payload} from Earth #{}", Time.new + 2))
+      $scheduler.add(Event.new('info.send.start', "Info Request #{payload} from #{properties.headers['origin']}", Time.new + 2))
 
-        6.times do |i|
-          $scheduler.add(Event.new('info.send.sending', "Sending #{payload} #{i*20}%", Time.new + i + 3))
-        end
+      6.times do |i|
+        $scheduler.add(Event.new('info.send.sending', "Sending #{payload} #{i*20}%", Time.new + i + 3))
+      end
 
-        $scheduler.add(Event.new('info.send.over', "Sent #{payload} to Earth Starbase", Time.new + 8))
+      $scheduler.add(Event.new('info.send.over', "Sent #{payload} to #{properties.headers['origin']}", Time.new + 8))
 
       # Simulate task processing
       task = Concurrent::TimerTask.new(execution_interval: 8, timeout_interval: 5) do

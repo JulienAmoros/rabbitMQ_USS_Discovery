@@ -8,13 +8,15 @@ class RPCClient
   attr_accessor :call_id, :response, :lock, :condition, :connection,
                 :channel, :server_queue_name, :reply_queue, :exchange
 
-  def initialize(server_queue_name)
+  def initialize(server_queue_name, origin)
     @connection = Bunny.new(hostname: '172.17.0.2', automatically_recover: false)
     @connection.start
 
     @channel = connection.create_channel
     @exchange = channel.default_exchange
     @server_queue_name = server_queue_name
+
+    @origin = origin
 
     setup_reply_queue
   end
@@ -25,7 +27,8 @@ class RPCClient
     exchange.publish(procedure,
                      routing_key: server_queue_name,
                      correlation_id: call_id,
-                     reply_to: reply_queue.name)
+                     reply_to: reply_queue.name,
+                     headers: {origin: @origin})
 
     # wait for the signal to continue the execution
     lock.synchronize { condition.wait(lock) }
@@ -62,7 +65,7 @@ class RPCClient
   end
 end
 
-client = RPCClient.new('uss_rpc')
+client = RPCClient.new('uss_rpc', 'Earth Starbase')
 
 ask_for = 'science_data'
 
@@ -70,13 +73,3 @@ puts " [x] Requesting #{ask_for}"
 response = client.call(ask_for)
 
 puts " [.] #{response} received!"
-
-# begin
-#   while true
-#
-#   end
-# rescue Interrupt
-#
-#   client.stop
-#
-# end
