@@ -8,7 +8,11 @@ $f_shield_state = 100
 connection = Bunny.new(hostname: '172.17.0.2')
 connection.start
 $channel = connection.create_channel
+# Creating permanent and exclusive queue for logs
+$channel.queue('all_logs', durable: true)
+# Creating Exchange for Severity Logs
 $uss_broadcast_severity = $channel.direct('all_severity')
+# Creating Exchange for label based selection
 $uss_broadcast_topic = $channel.topic('all_types')
 
 class Scheduler
@@ -53,8 +57,6 @@ class Event
                               timestamp: time.to_i)
 
     ### Part for rabbitMQ ###
-    # Creating permanent and exclusive queue for logs
-    $channel.queue('all_logs', durable: true)
     # Send permanent logging - default exchange is durable by default
     $channel.default_exchange.publish(log, routing_key: 'all_logs', persistent: true)
 
