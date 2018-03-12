@@ -1,5 +1,6 @@
 require 'date'
 require 'bunny'
+require 'concurrent'
 require_relative 'utils'
 
 $scheduler = []
@@ -10,6 +11,8 @@ connection.start
 $channel = connection.create_channel
 $uss_broadcast_severity = $channel.direct('all_severity')
 $uss_broadcast_topic = $channel.topic('all_types')
+
+mutex = Mutex.new
 
 class Event
   attr_reader :time, :message, :type
@@ -38,6 +41,11 @@ class Event
 
     # Send logs per types to topic exchange
     $uss_broadcast_topic.publish(log, routing_key: type)
+
+    # Subscribe to RPC queue
+    subscribe_to_rpc_queue('uss_rpc')
+
+    ### END part for rabbitMQ ###
 
     # Generate event
     generate_event
@@ -101,6 +109,10 @@ class Event
       $scheduler << Event.new('black.jump.start', 'Preparing Hyper Jump', time)
       $scheduler << Event.new('black.jump.over', 'Jumping over', Time.new + 1) unless type == 'starting'
     end
+
+    if type == 'destroy'
+      $scheduler = []
+    end
   end
 
   def get_color
@@ -115,16 +127,49 @@ class Event
       "\e[90m"
     elsif type == 'recovery'
       "\e[32m"
+    elsif type == 'starting' or type == 'destroy'
+      "\e[35m"
     end
   end
 
   def get_severity
     type.split('.')[0]
   end
+
+  def subscribe_to_rpc_queue(queue_name)
+    # Creating queue for Remote Process Call
+    @rpc_queue = $channel.queue(queue_name)
+
+    # Subscribe to the queue
+    @rpc_queue.subscribe(block: false) do |_delivery_info, properties, payload|
+      # puts payload + ' time: ' + Time.new.to_s
+      # Add processing events to the scheduler
+        $scheduler << Event.new('info.send.start', "Info Request #{payload} from Earth #{}", Time.new + 2)
+
+        6.times do |i|
+          $scheduler << Event.new('info.send.sending', "Sending #{payload} #{i*20}%", Time.new + i + 3)
+        end
+
+        $scheduler << Event.new('info.send.over', "Sent #{payload} to Earth Starbase", Time.new + 8)
+
+      # Simulate task processing
+      task = Concurrent::TimerTask.new(execution_interval: 8, timeout_interval: 5) do
+        $channel.default_exchange.publish(
+            payload,
+            routing_key: properties.reply_to,
+            correlation_id: properties.correlation_id
+        )
+        task.shutdown
+      end
+      task.execute
+
+    end
+  end
 end
 
 
 $scheduler << Event.new('starting', 'CONNECTED TO USS-DISCOVERY EVENT LOG', Time.new)
+# $scheduler << Event.new('destroy', 'USS_DISCOVERY SELF-ANIHILATION COMPLETED', Time.new + 60)
 
 
 until $scheduler.empty?
