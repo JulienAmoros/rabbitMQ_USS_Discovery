@@ -12,7 +12,7 @@ begin
   puts ' [*] Waiting for messages. To exit press CTRL+C'
   queue.subscribe(block: true, manual_ack: true) do |_delivery_info, _properties, body|
     puts " [x] Processing #{body} (#{_delivery_info.delivery_tag})"
-    channel.nack(_delivery_info.delivery_tag, requeue: true)
+    channel.nack(_delivery_info.delivery_tag, false, true)
     puts 'Job failed'
   end
 rescue Interrupt => _
