@@ -13,6 +13,9 @@ Once this is done, you can compile Dockerfile with `docker-compose build`.
 
 To launch the image: `docker-compose up`
 
+## Import Broker Definition
+If you have a json file containing your broker definition, you can copy it in this directory under the name `broker_definition.json`, otherwise modify it on Dockerfile.
+
 ## Generate Certificates
 If you want to re-generate certificates.
 ### Certification Authority certificate
