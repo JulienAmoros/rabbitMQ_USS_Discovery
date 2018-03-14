@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
 require 'bunny'
+require_relative '../../bunny_factory'
+
+include BunnyFactory
 
 class FibonacciServer
   def initialize
-    @connection = Bunny.new(hostname: '172.17.0.2')
+    @connection = BunnyFactory::get_basic_connection
     @connection.start
     @channel = @connection.create_channel
   end

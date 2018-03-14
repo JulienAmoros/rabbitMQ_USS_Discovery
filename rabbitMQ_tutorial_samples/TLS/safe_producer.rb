@@ -1,13 +1,12 @@
 #!/usr/bin/env ruby
 require 'bunny'
+require_relative '../../bunny_factory'
 
-connection = Bunny.new(hostname:  '172.18.1.2',
-                       port: 5671,
-                       tls: true,
-                       tls_cert: '../../TLS/client1/cert.pem',
-                       tls_key: '../../TLS/client1/key.pem',
-                       tls_ca_certificates: ['../../TLS/cacert.pem'],
-                       verify_peer: true)
+include BunnyFactory
+
+connection = BunnyFactory.get_encrypted_connection(vhost: 'secure_connection',
+                                                   user: 'safe_producer',
+                                                   pass: 'safe_producer')
 connection.start
 
 channel = connection.create_channel

@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 require 'bunny'
+require_relative '../../bunny_factory'
 
-connection = Bunny.new(hostname:  '172.17.0.2')
+include BunnyFactory
+connection = BunnyFactory::get_basic_connection
+
 connection.start
 
 channel = connection.create_channel

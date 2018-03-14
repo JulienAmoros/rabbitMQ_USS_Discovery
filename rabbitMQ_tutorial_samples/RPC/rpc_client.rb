@@ -1,13 +1,16 @@
 #!/usr/bin/env ruby
 require 'bunny'
 require 'thread'
+require_relative '../../bunny_factory'
+
+include BunnyFactory
 
 class FibonacciClient
   attr_accessor :call_id, :response, :lock, :condition, :connection,
                 :channel, :server_queue_name, :reply_queue, :exchange
 
   def initialize(server_queue_name)
-    @connection = Bunny.new(hostname: '172.17.0.2', automatically_recover: false)
+    @connection = BunnyFactory::get_basic_connection
     @connection.start
 
     @channel = connection.create_channel
