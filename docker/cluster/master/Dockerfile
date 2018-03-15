@@ -13,5 +13,5 @@ COPY key.pem /etc/ssl/private/rmq-key.pem
 COPY broker_definition.json /etc/rabbitmq/broker_definition.json
 
 COPY erlang.cookie /var/lib/rabbitmq/.erlang.cookie
-RUN chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
-RUN chmod 400 /var/lib/rabbitmq/.erlang.cookie
+RUN chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie \
+&& chmod 400 /var/lib/rabbitmq/.erlang.cookie
