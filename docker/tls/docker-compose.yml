@@ -1,0 +1,17 @@
+version: '2'
+services:
+  master-rabbit:
+    build: ./
+    ports:
+      - 8080:15672
+    networks:
+      rmqbr:
+        ipv4_address: 172.18.1.2
+
+networks:
+  rmqbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24
+          gateway: 172.18.1.1
