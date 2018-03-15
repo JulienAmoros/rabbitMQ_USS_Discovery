@@ -10,4 +10,8 @@ COPY cert.pem /etc/ssl/certs/rmq-cert.pem
 # Copy rmq key
 COPY key.pem /etc/ssl/private/rmq-key.pem
 # Copy Broker definition
-COPY ./broker_definition.json /etc/rabbitmq/broker_definition.json
+COPY broker_definition.json /etc/rabbitmq/broker_definition.json
+
+COPY erlang.cookie /var/lib/rabbitmq/.erlang.cookie
+RUN chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
+RUN chmod 400 /var/lib/rabbitmq/.erlang.cookie
