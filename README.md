@@ -20,4 +20,9 @@ and uss_shield_status_logging.rb uses topic type exchange with temporary queue. 
 is an example of client for Remote Procedure Call (see [RPC in ruby](https://www.rabbitmq.com/tutorials/tutorial-six-ruby.html))
 
 ## TLS support
-In `docker/` folder, you'll find a custom Docker image builder for enabling TLS communication in RabbitMQ.
+In `docker/tls` folder, you'll find a custom Docker image builder for enabling TLS communication in RabbitMQ.
+
+## Troubleshooting
+For TLS, bunny factory use the name of current folder as milestone to get files absolute path (please do a PR if you know
+better way), which means that if this there is more than one `rabbitMQ_test` folder in folder path, TLS certificates and key
+fetching won't work for clients. Same thing if you renamed current folder to something else; to fix this, modify `bunny_factory.rb`.
